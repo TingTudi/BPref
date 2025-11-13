@@ -12,7 +12,11 @@ cd custom_dmcontrol
 pip install -e .
 cd custom_dmc2gym
 pip install -e .
+
 pip install git+https://github.com/rlworkgroup/metaworld.git@master#egg=metaworld
+Installs a version of metaworld that is too new for the python version required by the document
+Just skip it
+
 pip install pybullet
 ```
 
