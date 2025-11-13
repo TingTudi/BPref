@@ -87,3 +87,13 @@ Experiments can be reproduced with the following:
 
 note: full hyper-paramters for meta-world will be updated soon!
 
+
+
+# Rupert's additions
+## Running
+To run a simple experiment on a laptop without GPU:
+
+```
+python train_SAC.py env=walker_walk num_seed=12345 device=cpu num_train_steps=500 num_seed_steps=100
+```
+This just runs `train_SAC.py` a small number of times and logs every 50 steps, but it's a start!

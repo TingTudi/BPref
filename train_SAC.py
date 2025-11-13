@@ -102,6 +102,8 @@ class Workspace(object):
         fixed_start_time = time.time()
         
         while self.step < self.cfg.num_train_steps:
+            if self.step % 50 == 0:
+                print(f"--- DEBUG: Running Step {self.step} ---")
             if done:
                 if self.step > 0:
                     self.logger.log('train/duration',
