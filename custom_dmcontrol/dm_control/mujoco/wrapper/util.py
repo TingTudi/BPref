@@ -195,7 +195,7 @@ def _as_array(src, shape):
   # http://git.net/ml/python.ctypes/2008-02/msg00014.html
   ctype = src._type_  # pylint: disable=protected-access
 
-  size = np.product(shape)
+  size = np.prod(shape)
   ptr = ctypes.cast(src, ctypes.POINTER(ctype * size))
   buf = np.frombuffer(ptr.contents, dtype=ctype)
   buf.shape = shape
