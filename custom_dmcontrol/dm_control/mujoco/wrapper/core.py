@@ -122,16 +122,10 @@ def _maybe_register_license(path=None):
   """
   global _REGISTERED
   if not _REGISTERED:
-    if path is None:
-      path = util.get_mjkey_path()
-    result = mjlib.mj_activate(util.to_binary_string(path))
-    if result == 1:
-      _REGISTERED = True
-      # Internal analytics of mj_activate.
-    elif result == 0:
-      raise Error("Could not register license.")
-    else:
-      raise Error("Unknown registration error (code: {})".format(result))
+    # Skip license activation for open-source MuJoCo >= 2.1
+    # The newer mujoco Python package (2.3.3+) doesn't require licensing
+    _REGISTERED = True
+    print("INFO: License registration skipped (using open-source MuJoCo)")
 
 
 def _str2type(type_str):

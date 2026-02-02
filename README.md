@@ -93,6 +93,13 @@ note: full hyper-paramters for meta-world will be updated soon!
 ## Running
 To run a simple experiment on a laptop without GPU:
 
+Activate the conda environment:
+
+```
+conda activate bpref
+```
+
+Then there's running the experiment:
 ```
 python train_SAC.py env=walker_walk num_seed=12345 device=cpu num_train_steps=500 num_seed_steps=100
 ```

@@ -15,6 +15,79 @@ import hydra
 from logger import Logger
 from replay_buffer import ReplayBuffer
 
+user_home = os.path.expanduser("~")
+key_path = os.path.join(user_home, ".mujoco", "mjkey.txt")
+os.environ["MJKEY_PATH"] = key_path
+print(f"DEBUG: Forcing MJKEY_PATH to {key_path}")
+# If an open-source `mujoco` Python package is installed, prefer its shared
+# library so we don't need a MuJoCo 2.0 license.
+try:
+    import mujoco as _mujoco_pkg
+    mjlib_path = os.path.join(os.path.dirname(_mujoco_pkg.__file__), "mujoco.dll")
+    os.environ["MJLIB_PATH"] = mjlib_path
+    print(f"DEBUG: Forcing MJLIB_PATH to {mjlib_path}")
+except Exception:
+    # Fall back to default discovery behavior in util.get_mjlib()
+    pass
+
+# Backwards-compatibility wrapper: older configs used `class:` keys instead of
+# Hydra's `_target_`. Wrap `hydra.utils.instantiate` so nested instantiations
+# (e.g. inside agents) also work.
+import importlib
+from omegaconf import OmegaConf
+
+def _manual_instantiate(node):
+    """Recursively instantiate a config node that uses `class` or `_target_`.
+
+    Returns instantiated object when a callable target is found, otherwise
+    returns the resolved container (dict/list/scalar).
+    """
+    # Resolve OmegaConf nodes to plain containers
+    if OmegaConf.is_config(node):
+        container = OmegaConf.to_container(node, resolve=True)
+    else:
+        container = node
+
+    # Handle lists by instantiating each element
+    if isinstance(container, list):
+        return [_manual_instantiate(v) for v in container]
+
+    # If it's not a mapping, return as-is
+    if not isinstance(container, dict):
+        return container
+
+    # Determine target
+    target = None
+    if "_target_" in container:
+        target = container.pop("_target_")
+    elif "class" in container:
+        target = container.pop("class")
+
+    # Recursively process arguments
+    for k, v in list(container.items()):
+        container[k] = _manual_instantiate(v)
+
+    if target is None:
+        return container
+
+    # Import and instantiate. If a `params` dict is present (Hydra-style),
+    # pass its contents as keyword args to the class constructor.
+    kwargs = None
+    if "params" in container and isinstance(container["params"], dict):
+        kwargs = container.pop("params")
+    else:
+        # Remove common metadata keys that are not constructor args
+        container.pop("name", None)
+        kwargs = container
+
+    module_name, class_name = target.rsplit('.', 1)
+    module = importlib.import_module(module_name)
+    cls = getattr(module, class_name)
+    return cls(**kwargs)
+
+# Use manual instantiator throughout the repo for compatibility
+hydra.utils.instantiate = _manual_instantiate
+
 class Workspace(object):
     def __init__(self, cfg):
         self.work_dir = os.getcwd()
@@ -181,7 +254,7 @@ class Workspace(object):
 
         self.agent.save(self.work_dir, self.step)
         
-@hydra.main(config_path='config/train.yaml', strict=True)
+@hydra.main(config_path="config", config_name="train", version_base=None)
 def main(cfg):
     workspace = Workspace(cfg)
     workspace.run()
