@@ -52,6 +52,6 @@ exp/
 test_scripts/*
 *.pdf
 figures
-*.txt
+
 figure/
 data/
