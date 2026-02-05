@@ -100,7 +100,25 @@ conda activate bpref
 ```
 
 Then there's running the experiment:
+
+### CPU Run Command
 ```
 python train_SAC.py env=walker_walk num_seed=12345 device=cpu num_train_steps=500 num_seed_steps=100
 ```
 This just runs `train_SAC.py` a small number of times and logs every 50 steps, but it's a start!
+
+### GPU Run Command
+```
+python train_SAC.py env=walker_walk num_seed=12345 device=cuda num_train_steps=500 num_seed_steps=100
+```
+
+
+## Testing
+
+### First tests
+5000 steps
+On own laptop
+CPU: 11 minutes 6 seconds
+GPU: 2 minutes 34 seconds
+
+Big win for the GPU
